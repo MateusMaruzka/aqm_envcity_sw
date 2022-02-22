@@ -1,1 +1,1 @@
-# aqm_envcity_sw
+# Estação de monitoramento da qualidade do ar - EnvCity
