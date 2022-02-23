@@ -20,8 +20,11 @@ gpio27.value = False
 
 
 def main():
+
 	i2c = busio.I2C(board.SCL, board.SDA)
-	print("Hello World")
+
+	print("Teste: Alphasense CO-B4")
+
 	ads = ADS.ADS1115(i2c)
 	while True:
 		
