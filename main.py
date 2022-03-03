@@ -6,6 +6,7 @@ import time
 import digitalio
 import json
 import requests
+
 key = "PM8R5UZXO6T0A86U"
 
 gpio17 = digitalio.DigitalInOut(board.D17)
