@@ -69,9 +69,9 @@ class Alphasense_Sensors:
     
     def PPM(self, raw_we, raw_ae, algorithm = "suggested"):
         if algorithm == "suggested":
-            return func_wec(raw_we = raw_we, raw_ae = raw_ae) / self.sensitivity
+            return self.func_wec(raw_we = raw_we, raw_ae = raw_ae) / self.sensitivity
         else:
-            return func_aux_wec(raw_we = raw_we, raw_ae = raw_ae) / self.sensitivity
+            return self.func_aux_wec(raw_we = raw_we, raw_ae = raw_ae) / self.sensitivity
 
           
     
