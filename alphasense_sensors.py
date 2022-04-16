@@ -74,21 +74,20 @@ class Alphasense_Sensors:
         return data.values()
             
     def __algorithm_1(self, raw_we, raw_ae, temp):
-        kt = 1
         return (raw_we - self.electronic_we) - kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_2(self, raw_we, raw_ae, temp):
-        kt = 1 # TODO
+        kt = self.dados_correcao_temp[temp // 10 + 3]
         return (raw_we - self.electronic_we) - \
         (self.we_zero / self.ae_zero)*kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_3(self, raw_we, raw_ae, temp):
-        kt = 1 # TODO
+        kt = self.dados_correcao_temp[temp // 10 + 3]
         return (raw_we - self.electronic_we) - (self.we_zero - self.ae_zero) \
                - kt*(raw_ae - self.electronic_ae)
                
     def __algorithm_4(self, raw_we, raw_ae, temp):
-        kt = 1 # TODO
+        kt = self.dados_correcao_temp[temp // 10 + 3]
         return (raw_we - self.electronic_we) - self.we_zero - kt
     
     def sensor_configuration(self):
@@ -111,9 +110,9 @@ class Alphasense_Sensors:
     def temperature_corr(self):
         print(self.corrected_we.hehehe)
         
-    def PPB(self, raw_we, raw_ae, algorithm = "suggested"):
+    def PPB(self, raw_we, raw_ae, temp, algorithm = "suggested"):
         if algorithm == "suggested":
-            return self.corrected_we(raw_we = raw_we, raw_ae = raw_ae, temp=0) / self.sensitivity
+            return self.corrected_we(raw_we = raw_we, raw_ae = raw_ae, temp=temp) / self.sensitivity
         else:
             pass
             # return self.func_aux_wec(raw_we = raw_we, raw_ae = raw_ae, temp=0) / self.sensitivity
