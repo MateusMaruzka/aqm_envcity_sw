@@ -79,8 +79,13 @@ def main():
 	        
 	        time.sleep(0.1)
 
-
-	    co_we, co_ae = v[0], v[1] # ok
+        temp = dht11.temperature
+        umid = dht11.humidity
+        
+        print("Temperatura: ", temp)
+        print("Umidade: ", umid)
+	    
+        co_we, co_ae = v[0], v[1] # ok
         ox_we, ox_ae = v[2], v[3] # ok
 	    h2s_we, h2s_ae = v[4], v[5] #ok
 	    so2_we, so2_ae = v[6], v[7]
@@ -89,11 +94,11 @@ def main():
 	    
 	    
 	    msg = {
-	        "field1": co.PPB(co_we, co_ae),
-	        "field2": h2s.PPB(h2s_we, h2s_ae),
-	        "field3": no2.PPB(no2_we, no2_we),
-	        "field4": so2.PPB(so2_we, so2_we),
-	        "field5": ox.PPB(ox_we, ox_we),
+	        "field1": co.PPB(co_we, co_ae, temp),
+	        "field2": h2s.PPB(h2s_we, h2s_ae, temp),
+	        "field3": no2.PPB(no2_we, no2_we, temp),
+	        "field4": so2.PPB(so2_we, so2_we, temp),
+	        "field5": ox.PPB(ox_we, ox_we, temp),
 	    }
 	    print(msg)
 	    requests.post("https://api.thingspeak.com/update?api_key="+key, json=msg)
