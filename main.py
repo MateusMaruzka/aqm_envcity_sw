@@ -2,10 +2,13 @@ import busio
 import board
 import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
-import time
 import digitalio
+# import adafruit_dht as dht
+
+import time
 import json
 import requests
+
 
 from alphasense_sensors import Alphasense_Sensors
 
@@ -30,6 +33,8 @@ gpio23.value = 0
 gpio24.value = 0
 
 # mV / ppb -> V / ppm
+
+# dht11 = dht.DHT11(board.)
 
 
 def main():
