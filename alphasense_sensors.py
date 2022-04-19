@@ -7,21 +7,22 @@ Created on Tue Mar  1 16:39:50 2022
 
 import pickle as pi
 import dados_correcao_temp as dados_temp
+import dados_alphasense as dados_sens
 
+import functools
 
-# import functools
-
-# def decorator(func):
-#     @functools.wraps(func)
-#     def wrapper_decorator(*args, **kwargs):
-#         # Do something before
-#         value = func(*args, **kwargs)
-#         # Do something after
-#         return value
-#     return wrapper_decorator
-
-
-
+def debug(func):
+    """Print the function signature and return value"""
+    @functools.wraps(func)
+    def wrapper_debug(*args, **kwargs):
+        args_repr = [repr(a) for a in args]                      # 1
+        kwargs_repr = [f"{k}={v!r}" for k, v in kwargs.items()]  # 2
+        signature = ", ".join(args_repr + kwargs_repr)           # 3
+        print(f"Calling {func.__name__}({signature})")
+        value = func(*args, **kwargs)
+        print(f"{func.__name__!r} returned {value!r}")           # 4
+        return value
+    return wrapper_debug
 
 class Alphasense_Sensors:
     
@@ -31,7 +32,7 @@ class Alphasense_Sensors:
         
         self.__sensor_num = sensor_num
         self.__sensor_model = sensor_model
-        
+       
         self.bt, self.gain, self.we_zero, self.ae_zero, \
         self.we_sensor, self.sensitivity, self.electronic_we,  \
         self.electronic_ae, self.no2_sensitivity = \
@@ -68,8 +69,8 @@ class Alphasense_Sensors:
     def __get_sensor_data(self, sensor_model, sensor_num):
         
         with open(self.fn_data, "rb") as f:
-            data = pi.load(f)
-            data = data[sensor_model][sensor_num]
+            # data = pi.load(f)
+            data = dados_sens.data[sensor_model][sensor_num]
             
         return data.values()
             
@@ -98,7 +99,7 @@ class Alphasense_Sensors:
         kt = self.temp_correction_coef[3][temp // 10 + 3]
         print("kt", kt)
         return (raw_we - self.electronic_we) - self.we_zero - kt
-    
+    @debug
     def all_algorithms(self, raw_we, raw_ae, temp):
         return (self.__algorithm_1(raw_we, raw_ae, temp), \
                 self.__algorithm_2(raw_we, raw_ae, temp), \
@@ -131,11 +132,6 @@ class Alphasense_Sensors:
         else:
             pass
             # return self.func_aux_wec(raw_we = raw_we, raw_ae = raw_ae, temp=0) / self.sensitivity
-
-          
-    
-        
-        
 def main():
     
     fn_alpha_s = 'alphasense_sensor_data.pickle'

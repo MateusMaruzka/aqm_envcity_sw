@@ -5,8 +5,7 @@ Created on Wed Mar  2 22:57:57 2022
 @author: maruzka
 """
 
-
-  data = { 
+data = { 
             "CO-B4":  {
                 "162741358": { 
                             "board_type" : 0,
@@ -201,7 +200,6 @@ Created on Wed Mar  2 22:57:57 2022
             "NH3-B1" : {
                 
                  "77240204": {
-                    "Sensor Type": "NH3 B1",
                     "board_type": 1,
                     "gain": 0.8,
                     "we_zero": 963,
@@ -214,11 +212,8 @@ Created on Wed Mar  2 22:57:57 2022
                     },
     
                  "77240205": {
-                     
-                    "Sensor Type": "NH3 B1",
-                    "board_type": 1,
+                     "board_type": 1,
                     "gain": 0.8,
-                    "Sensor Number,": 77240205,
                     "we_zero": 775,
                     "aux_zero": 277,
                     "we_sensor": 59,
@@ -331,12 +326,9 @@ Created on Wed Mar  2 22:57:57 2022
                         "electronic_ae": 230,
                         "no2_sensitivity": -651,
                         },
-    
                  "204240462": {
-                    "Sensor Type": "OX B431",
                     "board_type": 2,
                     "gain": -0.73,
-                    "Sensor Number,": 204240462,
                     "we_zero": 216,
                     "aux_zero": 230,
                     "we_sensor": -521,
@@ -345,11 +337,10 @@ Created on Wed Mar  2 22:57:57 2022
                     "electronic_ae": 235,
                     "no2_sensitivity": -656,
                     },
-   
+
                  "204240461": {
                         "board_type": 2,
                         "gain": -0.73,
-                        "Sensor Number,": 204240461,
                         "we_zero": 228,
                         "aux_zero": 233,
                         "we_sensor": -510,
