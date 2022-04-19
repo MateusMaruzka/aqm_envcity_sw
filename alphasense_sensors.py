@@ -43,9 +43,9 @@ class Alphasense_Sensors:
     def __temperature_correction_func(self):
         
         if self.__sensor_model == "SO2-B4":
-           return self.__algorithm_4, dados_temp.ajuste_temp[self.__sensor_model][3]
+           return self.__algorithm_4, dados_temp.ajuste_temp[self.__sensor_model]
         else:
-            return self.__algorithm_1, dados_temp.ajuste_temp[self.__sensor_model][0]
+            return self.__algorithm_1, dados_temp.ajuste_temp[self.__sensor_model]
 
     def __aux(self):
         
@@ -74,21 +74,36 @@ class Alphasense_Sensors:
         return data.values()
             
     def __algorithm_1(self, raw_we, raw_ae, temp):
+        kt = self.temp_correction_coef[0][temp // 10 + 3]
+        print("kt", kt)
+
+        # kt = dados_temp.ajuste_temp[self.__sensor_model][3]
         return (raw_we - self.electronic_we) - kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_2(self, raw_we, raw_ae, temp):
-        kt = self.dados_correcao_temp[temp // 10 + 3]
+        kt = self.temp_correction_coef[1][temp // 10 + 3]
+        print("kt", kt)
+
         return (raw_we - self.electronic_we) - \
         (self.we_zero / self.ae_zero)*kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_3(self, raw_we, raw_ae, temp):
-        kt = self.dados_correcao_temp[temp // 10 + 3]
+        kt = self.temp_correction_coef[2][temp // 10 + 3]
+        print("kt", kt)
+
         return (raw_we - self.electronic_we) - (self.we_zero - self.ae_zero) \
                - kt*(raw_ae - self.electronic_ae)
                
     def __algorithm_4(self, raw_we, raw_ae, temp):
-        kt = self.dados_correcao_temp[temp // 10 + 3]
+        kt = self.temp_correction_coef[3][temp // 10 + 3]
+        print("kt", kt)
         return (raw_we - self.electronic_we) - self.we_zero - kt
+    
+    def all_algorithms(self, raw_we, raw_ae, temp):
+        return (self.__algorithm_1(raw_we, raw_ae, temp), \
+                self.__algorithm_2(raw_we, raw_ae, temp), \
+                self.__algorithm_3(raw_we, raw_ae, temp), \
+                self.__algorithm_4(raw_we, raw_ae, temp))
     
     def sensor_configuration(self):
         
@@ -129,21 +144,21 @@ def main():
     co.sensor_configuration();
     print("")
     
-    h2s = Alphasense_Sensors("H2S-B4", "163740262")
-    h2s.sensor_configuration();
-    print("")
+    # h2s = Alphasense_Sensors("H2S-B4", "163740262")
+    # h2s.sensor_configuration();
+    # print("")
 
-    no2 = Alphasense_Sensors("NO2-B43F", "202742056")
-    no2.sensor_configuration();
-    print("")
+    # no2 = Alphasense_Sensors("NO2-B43F", "202742056")
+    # no2.sensor_configuration();
+    # print("")
 
-    so2 = Alphasense_Sensors("SO2-B4", "164240347")
-    so2.sensor_configuration();
-    print("")
+    # so2 = Alphasense_Sensors("SO2-B4", "164240347")
+    # so2.sensor_configuration();
+    # print("")
 
-    ox = Alphasense_Sensors("OX-B431", "204240457")
-    ox.sensor_configuration();
-    print("")
+    # ox = Alphasense_Sensors("OX-B431", "204240457")
+    # ox.sensor_configuration();
+    # print("")
 
     
     import matplotlib.pyplot as plt
@@ -152,31 +167,73 @@ def main():
     we = np.arange(0, 5000, 250)
     ae = np.arange(0, 5000, 250)
     
-    we, ae = np.meshgrid(we, ae, sparse = True)
+    we, ae = np.meshgrid(we, ae, sparse = False)
 
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     from matplotlib import cm
+    import matplotlib.colors as colors
     from matplotlib.ticker import LinearLocator, FormatStrFormatter
     import numpy as np
+    import matplotlib.colors as colors
+    import matplotlib.cbook as cbook
+    from matplotlib import cm
     
     
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    # fig = plt.figure()
+    # ax = fig.gca(projection='3d')
     
     # Make data.
 
-    Z = co.PPB(we, ae)
+    temp = 20
+    Z1, Z2, Z3, Z4 = co.all_algorithms(we, ae, temp)
+    
     # Plot the surface.
-    surf = ax.plot_surface(we, ae, Z,rstride=1, cstride=1, cmap=cm.coolwarm,
-                       linewidth=0, antialiased=False)
+    # surf = ax.plot_wireframe(we, ae, Z1,"b*", rstride=10, cstride=10, color = "b",
+    #                          linewidth=2, antialiased=False, label = "Z1")
+    # surf = ax.plot_wireframe(we, ae, Z2,rstride=10, cstride=10, color = "g",
+    #                          linewidth=2, antialiased=False, label = "Z2")
+    # surf = ax.plot_wireframe(we, ae, Z3,rstride=10, cstride=10, color = "r",
+    #                    linewidth=2, antialiased=False, label = "Z3")
+    # surf = ax.plot_wireframe(we, ae, Z4,rstride=10, cstride=10, color = "gray",
+    #                    linewidth=2, antialiased=False, label = "Z4")
     
-    # ax = fig.add_subplot(1, 2, 2, projection='3d')
-
-    # # plot a 3D wireframe like in the example mplot3d/wire3d_demo
-    # ax.plot_wireframe(we, ae, Z, rstride=10, cstride=10)
+    # ax.plot_surface(we, ae, np.zeros(shape = we.shape), color = "gray", alpha = 0.5)
     
-    # plt.show()
+    X = we
+    Y = ae
+    
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    fig, ax = plt.subplots()
+    
+    CS = ax.contour(X, Y, Z4, 15, colors='k')  # Negative contours default to dashed.
+    ax.clabel(CS, fontsize=9, inline=True)
+    
+    L = ax.axvline(x=co.we_zero + co.electronic_we + 50, color='g', linestyle=':', linewidth=2, label = "WE Zero")
+    # ax.clabel(L, fontsize = 9, inline = True)
+    
+    ax.set_title('Algoritmo 4 - PPB > 0 VWE > Velectronic + Vzero + kt')
+    ax.set_xlabel("Working Electrode")
+    ax.set_ylabel("Auxiliary Electrode")
+    
+    fig, ax = plt.subplots()
+    
+    CS = ax.contour(X, Y, Z1, 15, colors='k')  # Negative contours default to dashed.
+    ax.clabel(CS, fontsize=9, inline=True)
+    
+    L = ax.axvline(x=co.we_zero + co.electronic_we + 50, color='g', linestyle=':', linewidth=2, label = "WE Zero")
+    # ax.clabel(L, fontsize = 9, inline = True)
+    
+    ax.set_title('Algoritmo 1 - PPB > 0 VWE > Velectronic + Vzero + kt')
+    ax.set_xlabel("Working Electrode")
+    ax.set_ylabel("Auxiliary Electrode")
+    
+    
+            
+        
+  
 if __name__ == "__main__":
     main()
         
