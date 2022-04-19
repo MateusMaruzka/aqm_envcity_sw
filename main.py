@@ -11,6 +11,8 @@ import requests
 
 from alphasense_sensors import Alphasense_Sensors, debug
 
+CO_key = "XIFCNV2MOZ0F97VV"
+OX_key = "4G4A0JHIJJN87QP5"
 
 key = "PM8R5UZXO6T0A86U"
 
@@ -35,8 +37,7 @@ gpio24.value = 0
 # mV / ppb -> V / ppm
 
 # dht11 = dht.DHT11(board.)
-temp = 0;
-umid = 0;
+
 dht11 = dht.DHT11(board.D21)
 
 def main():
@@ -72,6 +73,10 @@ def main():
     nh3_we, nh3_ae = 0,0
     
     chan = AnalogIn(ads, ADS.P0)
+    ads._write_register(0x01, teste)
+    temp = 10
+    umid = 10
+
     while(1):
         v = 12 * [0]
 
@@ -83,7 +88,7 @@ def main():
             # chan = AnalogIn(ads, ADS.P0)
             v[i] = chan.voltage * 1000
             
-            time.sleep(0.1)
+            time.sleep(0.25)
         try:
             temp = dht11.temperature
             umid = dht11.humidity
@@ -94,18 +99,44 @@ def main():
         print("Umidade: ", umid)
 
         co_we, co_ae, ox_we, ox_ae, h2s_we, h2s_ae, so2_we, so2_ae, nh3_we, nh3_ae, no2_we, no2_ae = v
+
+        print("Sending CO info")
+        
+        a1, a2, a3, a4 = co.all_algorithms(co_we, co_ae, temp)
+        co_msg = {
+        "field1" : a1,
+        "field2" : a2,
+        "field3" : a3,
+        "field4" : a4,
+        "field5" : co_we,
+        "field6" : co_ae,
+        "field7" : temp,
+        "field8" : umid }
+        
+        requests.post("https://api.thingspeak.com/update?api_key=" + CO_key, json = co_msg)
+        
+        print("\nSending OX info")
+        a1, a2, a3, a4 = ox.all_algorithms(ox_we, ox_ae, temp)
+        ox_msg = {
+        "field1": a1,
+        "field2": a2,
+        "field3": a3,
+        "field4": a4,
+        "field5": ox_we,
+        "field6": ox_ae,
+        "field7": temp,
+        "field8": umid }
+
+        requests.post("https://api.thingspeak.com/update?api_key=" + OX_key, json = ox_msg)
+
         # co_we, co_ae = v[0], v[1] # ok
         # ox_we, ox_ae = v[2], v[3] # ok
         # h2s_we, h2s_ae = v[4], v[5] #ok
         # so2_we, so2_ae = v[6], v[7]
         # nh3_we, nh3_ae = v[8], v[9]
         # no2_we, no2_ae = v[10], v[11´´
-        
-        print("Sensor CO")
-        co.all_algorithms(co_we, co_ae, temp)
-        print("")
 
-        
+
         #h2s.all_algorithms(h2s_we, h2s_ae, temp)
         #no2.all_algorithms(no2_we, no2_ae)
         #so2.all_algorithms(so2_we, so2_ae)
@@ -121,7 +152,7 @@ def main():
         # }
         # print(msg)
         # requests.post("https://api.thingspeak.com/update?api_key="+key, json=msg)
-        time.sleep(5)
+        time.sleep(10)
 
 
 if __name__ == "__main__":

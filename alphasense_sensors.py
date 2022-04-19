@@ -76,28 +76,28 @@ class Alphasense_Sensors:
             
     def __algorithm_1(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[0][temp // 10 + 3]
-        print("kt", kt)
+        #print("kt", kt)
 
         # kt = dados_temp.ajuste_temp[self.__sensor_model][3]
         return (raw_we - self.electronic_we) - kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_2(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[1][temp // 10 + 3]
-        print("kt", kt)
+        #print("kt", kt)
 
         return (raw_we - self.electronic_we) - \
         (self.we_zero / self.ae_zero)*kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_3(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[2][temp // 10 + 3]
-        print("kt", kt)
+        # print("kt", kt)
 
         return (raw_we - self.electronic_we) - (self.we_zero - self.ae_zero) \
                - kt*(raw_ae - self.electronic_ae)
                
     def __algorithm_4(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[3][temp // 10 + 3]
-        print("kt", kt)
+        #print("kt", kt)
         return (raw_we - self.electronic_we) - self.we_zero - kt
     @debug
     def all_algorithms(self, raw_we, raw_ae, temp):
