@@ -24,6 +24,8 @@ def debug(func):
         return value
     return wrapper_debug
 
+
+
 class Alphasense_Sensors:
     
     fn_data = '/home/pi/envcity_sw_lora/alphasense_sensors/alphasense_sensor_data.pickle'
@@ -38,8 +40,11 @@ class Alphasense_Sensors:
         self.electronic_ae, self.no2_sensitivity = \
         self.__get_sensor_data(sensor_model, sensor_num)
         
-        self.corrected_we, self.temp_correction_coef = self.__temperature_correction_func()
-        
+        if self.__sensor_model == "NH3-B1":
+            self.corrected_we = self.simple_conversion
+            self.temp_correction_coef = None
+        else:
+            self.corrected_we, self.temp_correction_coef = self.__temperature_correction_func()
         
     def __temperature_correction_func(self):
         
@@ -56,49 +61,45 @@ class Alphasense_Sensors:
 
         else: 
             self.func_aux_wec = self.__algorithm_3
-            # self.func_aux_wec.corr_temp = dados_temp.ajuste_temp[self.__sensor_model][2]
-
-        
-        
-    def get_sensorType(self):
-        return self.__sensor_type
+            # self.func_aux_wec.corr_temp = dados_temp.ajuste_temp[self.__sensor_model][2] 
     
     def get_sensorNumber(self):
-        return self.__sensor_number
+        return self.__sensor_num
     
     def __get_sensor_data(self, sensor_model, sensor_num):
         
         with open(self.fn_data, "rb") as f:
-            # data = pi.load(f)
             data = dados_sens.data[sensor_model][sensor_num]
             
         return data.values()
-            
+    
+    def simple_conversion(self, raw_we, raw_ae):
+        return (raw_we - self.electronic_we) - (raw_ae - self.electronic_ae)
+
+    def no2_corr(self, no_ppm):
+        return self.no2_sensitivity*no_ppm*self.gain
+
     def __algorithm_1(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[0][temp // 10 + 3]
-        #print("kt", kt)
-
-        # kt = dados_temp.ajuste_temp[self.__sensor_model][3]
-        return (raw_we - self.electronic_we) - kt*(raw_ae - self.electronic_ae)
+        return (raw_we - self.electronic_we ) - kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_2(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[1][temp // 10 + 3]
-        #print("kt", kt)
-
         return (raw_we - self.electronic_we) - \
         (self.we_zero / self.ae_zero)*kt*(raw_ae - self.electronic_ae)
     
     def __algorithm_3(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[2][temp // 10 + 3]
-        # print("kt", kt)
-
         return (raw_we - self.electronic_we) - (self.we_zero - self.ae_zero) \
                - kt*(raw_ae - self.electronic_ae)
                
     def __algorithm_4(self, raw_we, raw_ae, temp):
         kt = self.temp_correction_coef[3][temp // 10 + 3]
-        #print("kt", kt)
         return (raw_we - self.electronic_we) - self.we_zero - kt
+
+    def PPB(self, raw_we, raw_ae, **kwargs):
+        return self.corrected_we(raw_we = raw_we, raw_ae = raw_ae, **kwargs) / self.sensitivity
+
     @debug
     def all_algorithms(self, raw_we, raw_ae, temp):
         return (self.__algorithm_1(raw_we, raw_ae, temp), \
@@ -122,114 +123,13 @@ class Alphasense_Sensors:
         print("-----------Aux Electrode-----------")
         print("Electronic AE:", self.electronic_ae, "[mV]")
         print("AE Zero:", self.ae_zero, "[mV]")
-    
-    def temperature_corr(self):
-        print(self.corrected_we.hehehe)
         
-    def PPB(self, raw_we, raw_ae, temp, algorithm = "suggested"):
-        if algorithm == "suggested":
-            return self.corrected_we(raw_we = raw_we, raw_ae = raw_ae, temp=temp) / self.sensitivity
-        else:
-            pass
-            # return self.func_aux_wec(raw_we = raw_we, raw_ae = raw_ae, temp=0) / self.sensitivity
+
+
 def main():
+    nh3 = Alphasense_Sensors("NH3-B1", "77240205")
+    print(nh3.no2_sensitivity)
     
-    fn_alpha_s = 'alphasense_sensor_data.pickle'
-    
-    co = Alphasense_Sensors("CO-B4", "162741357")
-    co.sensor_configuration();
-    print("")
-    
-    # h2s = Alphasense_Sensors("H2S-B4", "163740262")
-    # h2s.sensor_configuration();
-    # print("")
-
-    # no2 = Alphasense_Sensors("NO2-B43F", "202742056")
-    # no2.sensor_configuration();
-    # print("")
-
-    # so2 = Alphasense_Sensors("SO2-B4", "164240347")
-    # so2.sensor_configuration();
-    # print("")
-
-    # ox = Alphasense_Sensors("OX-B431", "204240457")
-    # ox.sensor_configuration();
-    # print("")
-
-    
-    import matplotlib.pyplot as plt
-    import numpy as np
-    
-    we = np.arange(0, 5000, 250)
-    ae = np.arange(0, 5000, 250)
-    
-    we, ae = np.meshgrid(we, ae, sparse = False)
-
-    from mpl_toolkits.mplot3d import Axes3D
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
-    import matplotlib.colors as colors
-    from matplotlib.ticker import LinearLocator, FormatStrFormatter
-    import numpy as np
-    import matplotlib.colors as colors
-    import matplotlib.cbook as cbook
-    from matplotlib import cm
-    
-    
-    # fig = plt.figure()
-    # ax = fig.gca(projection='3d')
-    
-    # Make data.
-
-    temp = 20
-    Z1, Z2, Z3, Z4 = co.all_algorithms(we, ae, temp)
-    
-    # Plot the surface.
-    # surf = ax.plot_wireframe(we, ae, Z1,"b*", rstride=10, cstride=10, color = "b",
-    #                          linewidth=2, antialiased=False, label = "Z1")
-    # surf = ax.plot_wireframe(we, ae, Z2,rstride=10, cstride=10, color = "g",
-    #                          linewidth=2, antialiased=False, label = "Z2")
-    # surf = ax.plot_wireframe(we, ae, Z3,rstride=10, cstride=10, color = "r",
-    #                    linewidth=2, antialiased=False, label = "Z3")
-    # surf = ax.plot_wireframe(we, ae, Z4,rstride=10, cstride=10, color = "gray",
-    #                    linewidth=2, antialiased=False, label = "Z4")
-    
-    # ax.plot_surface(we, ae, np.zeros(shape = we.shape), color = "gray", alpha = 0.5)
-    
-    X = we
-    Y = ae
-    
-    import matplotlib.pyplot as plt
-    import numpy as np
-    
-    fig, ax = plt.subplots()
-    
-    CS = ax.contour(X, Y, Z4, 15, colors='k')  # Negative contours default to dashed.
-    ax.clabel(CS, fontsize=9, inline=True)
-    
-    L = ax.axvline(x=co.we_zero + co.electronic_we + 50, color='g', linestyle=':', linewidth=2, label = "WE Zero")
-    # ax.clabel(L, fontsize = 9, inline = True)
-    
-    ax.set_title('Algoritmo 4 - PPB > 0 VWE > Velectronic + Vzero + kt')
-    ax.set_xlabel("Working Electrode")
-    ax.set_ylabel("Auxiliary Electrode")
-    
-    fig, ax = plt.subplots()
-    
-    CS = ax.contour(X, Y, Z1, 15, colors='k')  # Negative contours default to dashed.
-    ax.clabel(CS, fontsize=9, inline=True)
-    
-    L = ax.axvline(x=co.we_zero + co.electronic_we + 50, color='g', linestyle=':', linewidth=2, label = "WE Zero")
-    # ax.clabel(L, fontsize = 9, inline = True)
-    
-    ax.set_title('Algoritmo 1 - PPB > 0 VWE > Velectronic + Vzero + kt')
-    ax.set_xlabel("Working Electrode")
-    ax.set_ylabel("Auxiliary Electrode")
-    
-    
-            
-        
-  
 if __name__ == "__main__":
     main()
         
