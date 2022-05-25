@@ -91,7 +91,7 @@ def save_data(fn: str, data):
 
 def datalogger(data):
     fn = date.today().strftime("%d_%m_%Y") + ".pickle"
-    save_data(fn, data)
+    save_data("/home/pi/envcity_sw_lora/"+fn, data)
 
 def main():
 
