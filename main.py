@@ -10,7 +10,7 @@ import time
 import requests
 import pickle
 from json import dumps,loads
-from datetime import date
+from datetime import date, datetime
 
 from alphasense_sensors.alphasense_sensors import Alphasense_Sensors
 from typing import List, TypeVar, Iterable
@@ -134,19 +134,17 @@ def main():
         nh3_we, nh3_ae = v[10:12]
         no2_we, no2_ae = v[8:10]
 
-        labels = ["co_we", "co_ae","ox_we", "ox_ae","h2s_we", "h2s_ae","so2_we", "so2_ae", \
+        labels = ["date","co_we", "co_ae","ox_we", "ox_ae","h2s_we", "h2s_ae","so2_we", "so2_ae", \
         "nh3_we", "nh3_ae" ,"no2_we", "no2_ae", "temp", "umid"]
 
-        data = dict(zip(labels, [co_we, co_ae,ox_we, ox_ae,h2s_we, h2s_ae,so2_we, so2_ae, \
+        data = dict(zip(labels, [datetime.now(),co_we, co_ae,ox_we, ox_ae,h2s_we, h2s_ae,so2_we, so2_ae, \
         nh3_we, nh3_ae ,no2_we, no2_ae, temp, umid]))
-
+        print("datalogger", data)
         datalogger(data)
 
         co_ppb = co.PPB(co_we, co_ae, temp=temp)
-        
         no2_ppb = no2.PPB(no2_we, no2_ae, temp=temp)
         ox_ppb = ox.PPB(ox_we - ox.no2_corr(no2_ppb/1000), ox_ae, temp=temp)
-        
         h2s_ppb = h2s.PPB(h2s_we, h2s_ae, temp=temp)
         nh3_ppb = nh3.PPB(nh3_we, nh3_ae)
         so2_ppb = so2.PPB(so2_we, so2_ae, temp=temp)
@@ -183,9 +181,10 @@ def main():
         # ox_msg = dictThingSpeak(data)
         # requests.post("https://api.thingspeak.com/update?api_key=" + OX_key, json = ox_msg)
 
-        time.sleep(60)
+        time.sleep(60/1.027)
 
 
 if __name__ == "__main__":
     main()
+
 
