@@ -39,7 +39,7 @@ class Alphasense_Sensors:
         self.__get_sensor_data(sensor_model, sensor_num)
         
         self.corrected_we, self.temp_correction_coef = self.__temperature_correction_func()
-        
+        self.temp_correction_coef = np.array(self.temp_correction_coef)
         
     def __temperature_correction_func(self):
         
