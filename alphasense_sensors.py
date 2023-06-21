@@ -66,12 +66,8 @@ class Alphasense_Sensors:
     def get_sensorNumber(self):
         return self.__sensor_number
     
-    def __get_sensor_data(self, sensor_model, sensor_num):
-        
-        with open(self.fn_data, "rb") as f:
-            # data = pi.load(f)
-            data = dados_sens.data[sensor_model][sensor_num]
-            
+    def __get_sensor_data(self, sensor_model, sensor_num):       
+        data = dados_sens.data[sensor_model][sensor_num]        
         return data.values()
             
     def __algorithm_1(self, raw_we, raw_ae, temp):
