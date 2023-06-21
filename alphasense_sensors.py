@@ -26,8 +26,6 @@ def debug(func):
 
 class Alphasense_Sensors:
     
-    fn_data = 'alphasense_sensor_data.pickle'
-
     def __init__(self, sensor_model, sensor_num):
         
         self.__sensor_num = sensor_num
