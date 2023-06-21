@@ -93,7 +93,7 @@ class Alphasense_Sensors:
         kt = self.temp_correction_coef[3][temp // 10 + 3]
         #print("kt", kt)
         return (raw_we - self.electronic_we) - self.we_zero - kt
-    @debug
+    
     def all_algorithms(self, raw_we, raw_ae, temp):
         return (self.__algorithm_1(raw_we, raw_ae, temp), \
                 self.__algorithm_2(raw_we, raw_ae, temp), \
