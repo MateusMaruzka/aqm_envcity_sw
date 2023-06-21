@@ -8,7 +8,7 @@ Created on Tue Mar  1 16:39:50 2022
 import pickle as pi
 import dados_correcao_temp as dados_temp
 import dados_alphasense as dados_sens
-
+import numpy as np
 import functools
 
 def debug(func):
